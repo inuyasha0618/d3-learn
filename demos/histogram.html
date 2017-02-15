@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>histogram</title>
+    <script src="/node_modules/d3/build/d3.min.js"></script>
+    <style>
+        .svg-wrapper {
+            width: 1000px;
+            height: 500px;
+            margin: 50px auto 0;
+            position: relative;
+        }
+
+        svg {
+            border: 1px gold solid;
+        }
+
+        svg rect {
+            fill: steelblue;
+            stroke: darkblue;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="svg-wrapper">
+        <svg width="1000" height="500"></svg>
+    </div>
+
+    <script>
+        var margin = {
+                top: 20,
+                right: 50,
+                bottom: 20,
+                left: 50
+            },
+            chartWith = 1000 - margin.left - margin.right,
+            chartHeight = 500 - margin.top - margin.bottom,
+
+            chartGroup = d3.select('svg').append('g').attr('transform', 'translate(' + [margin.left, margin.top] + ')'),
+
+            xScale = d3.scaleLinear().domain([0, 6]).range([0, chartWith]),
+            yScale = d3.scaleLinear().domain([0, 10]).range([chartHeight, 0]),
+
+            xAxis = d3.axisBottom(xScale).tickValues([0, 1, 2, 3, 4, 5]).tickFormat(d3.format('d')),
+            yAxis = d3.axisLeft(yScale),
+
+            flag = false,
+
+            histoChart = d3.histogram()
+                .thresholds([0, 1, 2, 3, 4, 5])
+                .domain([0, 6])
+                .value(function(d) {
+                    return d.retweets.length;
+                });
+
+            chartGroup
+                .append('g')
+                .classed('x-axis', true)
+                .attr('transform', 'translate(' + [0, chartHeight] + ')')
+                .call(xAxis)
+                .selectAll('g.tick text')
+                .attr('dx', xScale(1) / 2);
+
+            chartGroup
+                .append('g')
+                .classed('y-axis', true)
+                .call(yAxis);
+
+            d3.json('/datas/tweets.json', function(err, data) {
+                var dataset = histoChart(data.tweets);
+
+                chartGroup.selectAll('rect')
+                            .data(dataset)
+                            .enter()
+                            .append('rect')
+                            .attr('x', function(d) {
+                                return xScale(d.x0);
+                            })
+                            .attr('y', function(d) {
+                                return yScale(d.length);
+                            })
+                            .attr('width', xScale(1))
+                            .attr('height', function(d) {
+                                return chartHeight - yScale(d.length);
+                            })
+                            .on('click', function() {
+                                flag = !flag;
+
+                                histoChart.value(function(d) {
+                                    return flag ? d.favorites.length : d.retweets.length;
+                                })
+                                chartGroup.selectAll('rect')
+                                            .data(histoChart(data.tweets))
+                                            .transition()
+                                            .duration(500)
+                                            .attr('y', function(d) {
+                                                return yScale(d.length);
+                                            })
+                                            .attr('height', function(d) {
+                                                return chartHeight - yScale(d.length);
+                                            })
+
+                            })
+            })
+    </script>
+</body>
+</html>

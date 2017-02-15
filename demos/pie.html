@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>histogram</title>
+    <script src="/node_modules/d3/build/d3.min.js"></script>
+    <script src="/node_modules/jquery/dist/jquery.min.js"></script>
+    <style>
+        .svg-wrapper {
+            width: 1000px;
+            height: 500px;
+            margin: 20px auto 0;
+            position: relative;
+        }
+
+        svg {
+            border: 1px gold solid;
+        }
+
+        svg rect {
+            fill: steelblue;
+            stroke: darkblue;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="oper-wrapper">
+        <button class="show-retweets">show retweets</button>
+        <button class="show-sum">show sum</button>
+    </div>
+    <div class="svg-wrapper">
+        <svg width="1000" height="500"></svg>
+    </div>
+
+    <script>
+        var pieChart = d3.pie().value(function(d) {
+                                        return d3.sum(d.values, function(el) {
+                                            return el.retweets.length;
+                                        });
+            }),
+            arcGene = d3.arc().innerRadius(20).outerRadius(100),
+            chartGroup = d3.select('svg').append('g')
+                            .classed('chart-group', true)
+                            .attr('transform', 'translate(' + [500, 250] + ')'),
+
+            colorScale = d3.scaleOrdinal().range(d3.schemeCategory10);
+
+            var nestData;
+
+        d3.json('/datas/tweets.json', function(data) {
+
+            nestData = d3.nest().key(function(d) {return d.user}).entries(data.tweets);
+            colorScale.domain(nestData.map(function(val) {return val.key}));
+
+            var dataset = pieChart(nestData);
+            
+            chartGroup.selectAll('path.pie-piece')
+                        .data(dataset)
+                        .enter()
+                        .append('path')
+                        .classed('pie-piece', true)
+                        .attr('d', function(d) {
+                            this.__current__ = d;
+                            return arcGene(d);
+                        })
+                        .style('fill', function(d) {
+                            return colorScale(d.data.key);
+                        })
+
+        })
+
+        $('body')
+            .on('click', '.oper-wrapper .show-sum', function() {
+                pieChart.value(function(d) {
+                    return d.values.length;
+                });
+
+                chartGroup.selectAll('.pie-piece')
+                            .data(pieChart(nestData), function(d) {return d.data.key})
+                            .transition()
+                            .duration(500)
+                            .attrTween('d', function(d) {
+                                var interpolate = d3.interpolate(this.__current__, d);
+                                this.__current__ = d;
+
+                                return function(t) {
+                                    return arcGene(interpolate(t));
+                                }
+                            })
+            })
+            .on('click', '.oper-wrapper .show-retweets', function() {
+                pieChart.value(function(d) {
+
+                    return d3.sum(d.values, function(el) {
+                        return el.retweets.length;
+                    })
+
+                });
+
+                chartGroup.selectAll('.pie-piece')
+                            .data(pieChart(nestData), function(d) {return d.data.key})
+                            .transition()
+                            .duration(500)
+                            .attrTween('d', function(d) {
+                                var interpolate = d3.interpolate(this.__current__, d);
+                                this.__current__ = d;
+
+                                return function(t) {
+                                    return arcGene(interpolate(t));
+                                }
+                            })
+            }) 
+    </script>
+</body>
+</html>

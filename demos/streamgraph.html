@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script src="/node_modules/d3/build/d3.min.js"></script>
+    <style>
+
+        .svg-wrapper {
+            width: 1000px;
+            height: 500px;
+            margin: 100px auto 0;
+            position: relative;
+        }
+
+        svg {
+            border: 1px gold solid;
+        }
+
+        svg .mov-line {
+            fill: none;
+            fill-opacity: 0.6;
+        }
+
+        svg .y-axis .tick text {
+            fill: none;
+        }
+
+        .svg-wrapper .legend-wrapper {
+            position: absolute;
+            right: 0;
+            top: 10px;
+        }
+
+        .svg-wrapper .legend-wrapper .legend-item {
+            margin-right: 10px;
+        }
+
+        .svg-wrapper .legend-wrapper .legend-item>span {
+            vertical-align: middle;
+        }
+
+        .svg-wrapper .legend-wrapper .legend-item>i {
+            display: inline-block;
+            margin-right: 5px;
+            width: 10px;
+            height: 10px;
+            vertical-align: middle;
+
+        }
+    </style>
+</head>
+<body>
+    <div class="svg-wrapper">
+        <div class="legend-wrapper">
+            
+        </div>
+        <svg width="1000" height="500"></svg>
+    </div>
+<script>
+
+    var svg = d3.select('svg'),
+        margin = {
+            top: 20,
+            right: 50,
+            bottom: 20,
+            left: 50
+        },
+
+        chartWidth = 1000 - margin.left - margin.right,
+        chartHeight = 500 - margin.top - margin.bottom,
+
+        xScale = d3.scaleLinear().domain([1, 10]).range([0, chartWidth]),
+        yScale = d3.scaleLinear().domain([-50, 50]).range([chartHeight, 0]),
+
+        movieNames = ['movie1', 'movie2', 'movie3', 'movie4', 'movie5', 'movie6'];
+
+    var colorScale = d3.scaleOrdinal().domain(movieNames).range(d3.schemeCategory10);
+
+    var xAxis = d3.axisBottom(xScale).ticks(10)
+                    .tickValues(d3.range(1, 11));
+    var yAxis = d3.axisLeft(yScale);
+
+    var chartGroup = svg.append('g')
+                        .classed('chart-group', true)
+                        .attr('transform', 'translate(' + [margin.left, margin.top] + ')');
+
+    chartGroup.append('g')
+                .attr('transform', 'translate(' + [0, chartHeight] + ')')
+                .classed('x-axis', true)
+                .call(xAxis);
+
+    chartGroup.append('g')
+                .classed('y-axis', true)
+                .call(yAxis);
+
+    d3.csv('/datas/movies.csv', function(data) {
+        for (var key in data[0]) {
+            if (!data[0].hasOwnProperty(key)) return;
+            if (key !== 'day') {
+                var areaGene = d3.area()
+                                    .x(function(d) {
+                                        return xScale(d.day);
+                                    })
+                                    .y1(function(d) {
+                                        return yScale(calcuTop(d, key) - calcuSum(d) / 2);
+                                    })
+                                    .y0(function(d) {
+                                        return yScale(calcuButtom(d, key) - calcuSum(d) / 2);
+                                    })
+                                    .curve(d3.curveBasis);
+
+                chartGroup.append('path')
+                            .classed(key + '-line mov-line', true)
+                            .attr('d', areaGene(data))
+                            .style('fill', colorScale(key));
+            }
+        }
+
+        var legendItem = d3.select('.legend-wrapper')
+                            .selectAll('.legend-item')
+                            .data(movieNames)
+                            .enter()
+                            .append('span')
+                            .classed('legend-item', true)
+
+        legendItem.append('i')
+                    .style('background-color', function(d) {
+                        return colorScale(d);
+                    });
+
+        legendItem.append('span')
+                    .text(function(d) {
+                        return d;
+                    })
+
+    })
+
+    function calcuTop(obj, movieName) {
+        return parseInt(obj[movieName]) + calcuButtom(obj, movieName);
+    }
+
+    function calcuButtom(obj, movieName) {
+        var buttom = 0;
+        for(key in obj) {
+            if (!obj.hasOwnProperty(key)) return;
+
+            if (key !== 'day') {
+
+                if (key !== movieName) {
+                    buttom += parseInt(obj[key]);
+                } else {
+                    break;
+                } 
+            }
+
+        }
+
+        return buttom;
+    }
+
+    function calcuSum(obj) {
+        var sum = 0;
+        for (var key in obj) {
+            if (obj.hasOwnProperty(key) && key !== 'day') {
+                sum += parseInt(obj[key]);
+            }
+        }
+
+        return sum;
+    }
+
+</script>
+</body>
+</html>
