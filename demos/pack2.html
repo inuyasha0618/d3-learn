@@ -40,7 +40,7 @@
                 return b.value - a.value;
             })
 
-            var packLayout = d3.pack().size([500, 500]);
+            var packLayout = d3.pack().size([1000, 500]);
             var nodes = packLayout(root).descendants();
             
             // colorScale.domain(nodes.map(function(val) {
