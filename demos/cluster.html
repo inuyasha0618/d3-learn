@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>histogram</title>
+    <script src="/node_modules/d3/build/d3.min.js"></script>
+    <style>
+        .svg-wrapper {
+            width: 1000px;
+            height: 500px;
+            margin: 50px auto 0;
+            position: relative;
+        }
+
+        svg {
+            border: 1px gold solid;
+        }
+
+        svg circle {
+            fill: none;
+            stroke: darkblue;
+        }
+
+        svg .link {
+        	stroke: steelblue;
+        	fill: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="svg-wrapper">
+        <svg width="800" height="2000"></svg>
+    </div>
+    <script>
+        var colorScale = d3.scaleOrdinal().range(d3.schemeCategory20);
+        d3.csv('/datas/flare.csv', function(data) {
+        	var root = d3.stratify()
+        				.parentId(function(d) {
+        					return d.id.substr(0, d.id.lastIndexOf('.'));
+        				})(data);
+        	
+            root.sum(function() {
+                return 1;
+            }).sort(function(a, b) {
+                return b.value - a.value;
+            })
+
+            // debugger
+            var width = d3.select('svg').attr('width'),
+            	height = d3.select('svg').attr('height');
+
+            var clusterLayout = d3.cluster().size([height, width]);
+            var treeLayout = d3.tree().size([height, width]);
+            var nodes = clusterLayout(root).descendants();
+
+            d3.select('svg').selectAll('circle')
+                .data(nodes)
+                .enter()
+                .append('circle')
+                .attr('cx', function(d) {
+                    return d.y;
+                })
+                .attr('cy', function(d) {
+                    return d.x;
+                })
+                .attr('r', function(d) {
+                    return d.depth === 0 ? 10 : 2;
+                })
+                
+            var link = d3.select('svg')
+            				.selectAll('path')
+            				.data(nodes.slice(1))
+            				.enter()
+            				.append('path')
+            				.classed('link', true)
+            				.attr('d', function(d) {
+            					return 'M' + d.y + ' ' + d.x +'C'
+            							 + (d.parent.y + 100) + ',' + d.x
+            							 + ' ' + (d.parent.y + 100) + ',' + d.parent.x
+            							 + ' ' + d.parent.y + ',' + d.parent.x;
+            				})
+
+        })
+    </script>
+</body>
+</html>

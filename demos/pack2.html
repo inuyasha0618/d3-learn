@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>histogram</title>
     <script src="/node_modules/d3/build/d3.min.js"></script>
+    <script src="/node_modules/jquery/dist/jquery.min.js"></script>
     <style>
         .svg-wrapper {
             width: 1000px;
@@ -20,11 +21,17 @@
             fill: none;
             stroke: darkblue;
         }
+
+        svg .link {
+            stroke: steelblue;
+            fill: none;
+        }
     </style>
 </head>
 <body>
+    <button class="oper">change</button>
     <div class="svg-wrapper">
-        <svg width="1000" height="500"></svg>
+        <svg width="1000" height="1000"></svg>
     </div>
     <script>
         var colorScale = d3.scaleOrdinal().range(d3.schemeCategory20);
@@ -40,12 +47,11 @@
                 return b.value - a.value;
             })
 
-            var packLayout = d3.pack().size([1000, 500]);
-            var nodes = packLayout(root).descendants();
+            var packLayout = d3.pack().size([1000, 500]),
+                clusterLayout = d3.cluster().size([1000, 500])
             
-            // colorScale.domain(nodes.map(function(val) {
-            //     return val.data.name;
-            // }));
+            var nodes = packLayout(root.copy()).descendants();
+            var node4Cluster = clusterLayout(root.copy()).descendants();
 
             d3.select('svg').selectAll('circle')
                 .data(nodes)
@@ -60,6 +66,37 @@
                 .attr('r', function(d) {
                     return d.r;
                 })
+
+            $('.oper').on('click', function() {
+                d3.select('svg').selectAll('circle')
+                    .data(node4Cluster)
+                    .transition()
+                    .duration(1000)
+                    .attr('cx', function(d) {
+                        return d.y;
+                    })
+                    .attr('cy', function(d) {
+                        return d.x;
+                    })
+                    .attr('r', 2);
+
+                d3.select('svg')
+                    .selectAll('path')
+                    .data(node4Cluster.slice(1))
+                    .enter()
+                    .append('path')
+                    .classed('link', true)
+                    .style('stroke-opacity', 0)
+                    .transition()
+                    .duration(1000)
+                    .style('stroke-opacity', 1)
+                    .attr('d', function(d) {
+                        return 'M' + d.y + ' ' + d.x +'C'
+                                 + (d.parent.y + 100) + ',' + d.x
+                                 + ' ' + (d.parent.y + 100) + ',' + d.parent.x
+                                 + ' ' + d.parent.y + ',' + d.parent.x;
+                    })
+            })
 
         })
     </script>
