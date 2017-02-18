@@ -34,7 +34,8 @@
         <svg width="1000" height="1000"></svg>
     </div>
     <script>
-        var colorScale = d3.scaleOrdinal().range(d3.schemeCategory20);
+        var clusterState = false;
+
         d3.csv('/datas/flare.csv', function(data) {
         	var root = d3.stratify()
         				.parentId(function(d) {
@@ -68,34 +69,60 @@
                 })
 
             $('.oper').on('click', function() {
-                d3.select('svg').selectAll('circle')
-                    .data(node4Cluster)
-                    .transition()
-                    .duration(1000)
-                    .attr('cx', function(d) {
-                        return d.y;
-                    })
-                    .attr('cy', function(d) {
-                        return d.x;
-                    })
-                    .attr('r', 2);
+                clusterState = !clusterState;
 
-                d3.select('svg')
-                    .selectAll('path')
-                    .data(node4Cluster.slice(1))
-                    .enter()
-                    .append('path')
-                    .classed('link', true)
-                    .style('stroke-opacity', 0)
-                    .transition()
-                    .duration(1000)
-                    .style('stroke-opacity', 1)
-                    .attr('d', function(d) {
-                        return 'M' + d.y + ' ' + d.x +'C'
-                                 + (d.parent.y + 100) + ',' + d.x
-                                 + ' ' + (d.parent.y + 100) + ',' + d.parent.x
-                                 + ' ' + d.parent.y + ',' + d.parent.x;
-                    })
+                if (clusterState) {
+                    d3.select('svg').selectAll('circle')
+                        .data(node4Cluster)
+                        .transition()
+                        .duration(1000)
+                        .attr('cx', function(d) {
+                            return d.y;
+                        })
+                        .attr('cy', function(d) {
+                            return d.x;
+                        })
+                        .attr('r', 2);
+
+                    d3.select('svg')
+                        .selectAll('path')
+                        .data(node4Cluster.slice(1))
+                        .enter()
+                        .append('path')
+                        .classed('link', true)
+                        .style('stroke-opacity', 0)
+                        .transition()
+                        .duration(1000)
+                        .style('stroke-opacity', 1)
+                        .attr('d', function(d) {
+                            return 'M' + d.y + ' ' + d.x +'C'
+                                     + (d.parent.y + 100) + ',' + d.x
+                                     + ' ' + (d.parent.y + 100) + ',' + d.parent.x
+                                     + ' ' + d.parent.y + ',' + d.parent.x;
+                        })
+                } else {
+                    d3.select('svg').selectAll('circle')
+                        .data(nodes)
+                        .transition()
+                        .duration(1000)
+                        .attr('cx', function(d) {
+                            return d.x;
+                        })
+                        .attr('cy', function(d) {
+                            return d.y
+                        })
+                        .attr('r', function(d) {
+                            return d.r;
+                        })
+
+                    d3.select('svg').selectAll('.link')
+                        .transition()
+                        .duration(1000)
+                        .style('stroke-opacity', 0)
+                        .remove();
+
+                }
+
             })
 
         })
