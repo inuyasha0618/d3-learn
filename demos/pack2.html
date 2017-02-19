@@ -49,7 +49,7 @@
             })
 
             var packLayout = d3.pack().size([1000, 500]),
-                clusterLayout = d3.cluster().size([1000, 500])
+                clusterLayout = d3.tree().size([1000, 500])
             
             var nodes = packLayout(root.copy()).descendants();
             var node4Cluster = clusterLayout(root.copy()).descendants();
