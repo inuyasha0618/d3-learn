@@ -41,7 +41,7 @@
     <label for="">y</label>
     <input type="text" class="control-y" value="200">
 
-    <button class="oper">start</button>
+    <button class="">start</button>
     <div class="svg-wrapper">
         <svg width="1000" height="1000">
         </svg>
@@ -81,8 +81,20 @@
             .attr('d', dStr);
 
         $('.oper').on('click', function() {
-            var ySpan = [-500, 500];
+            var ySpan = [0, 300];
             var interpolate = d3.interpolate(ySpan[0], ySpan[1]);
+
+            svg.select('.bezir-line')
+                .transition()
+                .duration(1000)
+                .attrTween('d', function() {
+                    return function(t) {
+                        var tmpY = ctrlY + interpolate(t);
+                        svg.select('.control-node')
+                            .attr('cy', tmpY)
+                        return 'M' + startNode + 'Q' + [ctrlX, tmpY] + ' ' + endNode;
+                    }
+                })
         });
 
     </script>
