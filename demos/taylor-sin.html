@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script src="/node_modules/d3/build/d3.min.js"></script>
+    <script src="/node_modules/jquery/dist/jquery.min.js"></script>
+    <style>
+        path {
+            fill: none;
+            stroke: steelblue;
+        }
+
+        path.curve-appro {
+            stroke: gold;
+            stroke-width: 1px;
+        }
+    </style>
+</head>
+<body>
+    <input type="text">
+    <svg width=1000 height=500></svg>
+    <script>
+        var svg = d3.select('svg'),
+            width = parseInt(svg.attr('width')),
+            height = parseInt(svg.attr('height')),
+            margin = {
+                top: 20,
+                right: 20,
+                bottom: 20,
+                left: 100
+            },
+            chartWidth = width - margin.left - margin.right,
+            chartHeight = height - margin.top - margin.bottom,
+            dataset = d3.range(0, 20 * Math.PI, 0.1),
+            yDomain = [-10, 10]
+            xScale = d3.scaleLinear().domain(d3.extent(dataset)).range([0, chartWidth]),
+            yScale = d3.scaleLinear().domain(yDomain).range([chartHeight, 0]),
+            xAxis = d3.axisBottom().scale(xScale),
+            yAxis = d3.axisLeft().scale(yScale),
+            lineG = d3.line()
+                        .x(function(d) {
+                            return xScale(d);
+                        })
+                        .y(function(d) {
+                            return yScale(Math.sin(d));
+                        }),
+            line2G = d3.line()
+                        .x(function(d) {
+                            return xScale(d);
+                        })
+                        .y(function(d) {
+                            return yScale(d);
+                        })
+                        .defined(function(d) {
+                            var currY = line2G.y()(d),
+                                currX = line2G.x()(d);
+                            var res = currY >= 0 && currY < chartHeight && currX >= 0 && currX < chartWidth;
+                            return res;
+                        }),
+
+            chartG = svg.append('g')
+                        .attr('transform', 'translate(' + [margin.left, margin.top] + ')');
+
+        chartG.append('g')
+            .classed('y-axis', true)
+            .call(yAxis);
+
+        chartG.append('g')
+            .classed('x-axis', true)
+            .attr('transform', 'translate(' + [0, chartHeight/2] + ')')
+            .call(xAxis);
+
+        chartG.append('path')
+                .classed('curve', true)
+                .datum(dataset)
+                .attr('d', function(d) {
+                    return lineG(d);
+                })
+
+        chartG.append('path')
+                .classed('curve-appro', true)
+                .datum(dataset)
+                .attr('d', function(d) {
+                    return line2G(d);
+                })
+
+        function factorial(n) {
+            if (n < 0) return;
+
+            n = parseInt(n);
+
+            if (n > 1) {
+                return n * factorial(n - 1);
+            } else {
+                return 1;
+            }
+        }
+
+        $('input')
+            .on('blur', function() {
+                var val = parseInt($(this).val());
+                if (val === 0) {
+                    return;
+                }
+
+                if (val % 2 === 0) {
+                    val -= 1;
+                }
+
+                var target = (val + 1) / 2;
+
+                line2G.y(function(d) {
+                    var res = 0;
+
+                    for (var m = 1; m <= target; m++) {
+                        res += Math.pow(-1, m-1) * Math.pow(d, 2 * m - 1) / factorial(2 * m -1);
+                    }
+
+                    return yScale(res);
+                })
+
+                chartG.select('.curve-appro')
+                        // .transition()
+                        // .duration(1000)
+                        .attr('d', function(d) {
+                            // debugger
+                            return line2G(d);
+                        })
+            })
+    </script>
+</body>
+</html>
