@@ -32,7 +32,7 @@
             },
             chartWidth = width - margin.left - margin.right,
             chartHeight = height - margin.top - margin.bottom,
-            dataset = d3.range(0, 2 * Math.PI, 0.1),
+            dataset = d3.range(0, 2 * Math.PI, 0.05),
             yDomain = [-2, 2]
             xScale = d3.scaleLinear().domain([0, Math.PI * 2]).range([0, chartWidth]),
             yScale = d3.scaleLinear().domain(yDomain).range([chartHeight, 0]),
