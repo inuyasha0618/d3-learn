@@ -32,11 +32,11 @@
             },
             chartWidth = width - margin.left - margin.right,
             chartHeight = height - margin.top - margin.bottom,
-            dataset = d3.range(0, 20 * Math.PI, 0.1),
-            yDomain = [-10, 10]
-            xScale = d3.scaleLinear().domain(d3.extent(dataset)).range([0, chartWidth]),
+            dataset = d3.range(0, 2 * Math.PI, 0.1),
+            yDomain = [-2, 2]
+            xScale = d3.scaleLinear().domain([0, Math.PI * 2]).range([0, chartWidth]),
             yScale = d3.scaleLinear().domain(yDomain).range([chartHeight, 0]),
-            xAxis = d3.axisBottom().scale(xScale),
+            xAxis = d3.axisBottom().scale(xScale).tickValues([0.5 * Math.PI, Math.PI, 1.5 * Math.PI, 2 * Math.PI]).tickFormat(d3.format(",.2f")),
             yAxis = d3.axisLeft().scale(yScale),
             lineG = d3.line()
                         .x(function(d) {
@@ -57,7 +57,8 @@
                                 currX = line2G.x()(d);
                             var res = currY >= 0 && currY < chartHeight && currX >= 0 && currX < chartWidth;
                             return res;
-                        }),
+                        })
+                        ,
 
             chartG = svg.append('g')
                         .attr('transform', 'translate(' + [margin.left, margin.top] + ')');
@@ -121,8 +122,8 @@
                 })
 
                 chartG.select('.curve-appro')
-                        // .transition()
-                        // .duration(1000)
+                        .transition()
+                        .duration(1000)
                         .attr('d', function(d) {
                             // debugger
                             return line2G(d);
