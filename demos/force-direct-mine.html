@@ -14,9 +14,12 @@ line {
 circle {
   stroke: #fff;
   stroke-width: 1.5px;
+  cursor: pointer;
 }
 
 </style>
+<button class="stop">stop</button>
+<button class="restart">restart</button>
 <svg width="960" height="600"></svg>
 <script src="/node_modules/d3/build/d3.min.js"></script>
 <script src="/node_modules/jquery/dist/jquery.min.js"></script>
@@ -25,32 +28,36 @@ var svg = d3.select('svg'),
     width = +svg.attr('width'),
     height = +svg.attr('height');
 
+var nodes;
+var links;
+var nameMaps;
+
 d3.csv('/datas/flare.csv', function(data) {
-    var nodes = data.map(function(val) {
+
+    nameMaps = data.map(function(obj) {
+        return obj.id;
+    })
+
+    nodes = data.map(function(val) {
         return {
             name: val.id.substring(val.id.lastIndexOf('.') + 1),
             value: val.value
         }
     });
-    var links = data.map(function(val) {
-        var currId = val.id.substring(val.id.lastIndexOf('.') + 1),
-            hierachyStr = val.id.substring(0, val.id.lastIndexOf('.')),
-            parentId = hierachyStr.substring(hierachyStr.lastIndexOf('.') + 1);
+    links = data.map(function(val) {
+        var id = val.id,
+            parentId = id.substring(0, val.id.lastIndexOf('.'));
+
         return {
-            source: currId,
-            target: parentId
+            source: nameMaps.indexOf(id),
+            target: nameMaps.indexOf(parentId)
         }
-    }).filter(function(obj) {
-        return obj.source && obj.target;
+    })
+    .filter(function(obj) {
+        return obj.source !== -1 && obj.target !== -1;
     })
 
-
-    var circles = svg.selectAll('circle')
-        .data(nodes)
-        .enter()
-        .append('circle')
-        .classed('data-node', true)
-        .attr('r', 5);
+    // debugger
 
     var lines = svg.selectAll('line')
         .data(links)
@@ -58,13 +65,34 @@ d3.csv('/datas/flare.csv', function(data) {
         .append('line')
         .classed('data-link', true);
 
+    var circles = svg.selectAll('g')
+        .data(nodes)
+        .enter()
+        .append('g')
+
+        .append('circle')
+        .classed('data-node', true)
+        .attr('r', 5)
+        .style('fill', function(d) {
+            return d.name === 'data' ? 'steelblue' : '#000';
+        })
+        .call(d3.drag()
+                .on('start', dragStart)
+                .on('drag', dragging)
+                .on('end', dragEnd)
+            );
+
+    circles.append('title')
+            .text(function(d) {
+                return d.name;
+            })
     
     var simulation = d3.forceSimulation()
                         .nodes(nodes)
-                        .force('charge', d3.forceManyBody())
+                        .force('charge', d3.forceManyBody().strength(-10))
                         .force('center', d3.forceCenter().x(0.5 * width).y(0.5 * height))
                         .force('link', d3.forceLink().links(links).id(function(d) {
-                            return d.name;
+                            return d.index;
                         }))
                         .on('tick', ticked);
 
@@ -91,6 +119,31 @@ d3.csv('/datas/flare.csv', function(data) {
                 return d.target.y;
             })
     }
+
+    function dragStart(d) {
+        if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
+
+    function dragging(d) {
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+    }
+
+    function dragEnd(d) {
+        if (!d3.event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+    }
+
+    $('.stop').on('click', function() {
+        simulation.stop();
+    })
+
+    $('.restart').on('click', function() {
+        simulation.restart();
+    })
 
 })
 </script>
