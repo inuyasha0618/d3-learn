@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+svg {
+    outline: 1px gold solid;
+}
+
+line {
+  stroke: #999;
+  stroke-opacity: 0.6;
+}
+
+circle {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+</style>
+<svg width="960" height="600"></svg>
+<script src="/node_modules/d3/build/d3.min.js"></script>
+<script src="/node_modules/jquery/dist/jquery.min.js"></script>
+<script>
+var svg = d3.select('svg'),
+    width = +svg.attr('width'),
+    height = +svg.attr('height');
+
+d3.csv('/datas/flare.csv', function(data) {
+    var nodes = data.map(function(val) {
+        return {
+            name: val.id.substring(val.id.lastIndexOf('.') + 1),
+            value: val.value
+        }
+    });
+    var links = data.map(function(val) {
+        var currId = val.id.substring(val.id.lastIndexOf('.') + 1),
+            hierachyStr = val.id.substring(0, val.id.lastIndexOf('.')),
+            parentId = hierachyStr.substring(hierachyStr.lastIndexOf('.') + 1);
+        return {
+            source: currId,
+            target: parentId
+        }
+    }).filter(function(obj) {
+        return obj.source && obj.target;
+    })
+
+
+    var circles = svg.selectAll('circle')
+        .data(nodes)
+        .enter()
+        .append('circle')
+        .classed('data-node', true)
+        .attr('r', 5);
+
+    var lines = svg.selectAll('line')
+        .data(links)
+        .enter()
+        .append('line')
+        .classed('data-link', true);
+
+    
+    var simulation = d3.forceSimulation()
+                        .nodes(nodes)
+                        .force('charge', d3.forceManyBody())
+                        .force('center', d3.forceCenter().x(0.5 * width).y(0.5 * height))
+                        .force('link', d3.forceLink().links(links).id(function(d) {
+                            return d.name;
+                        }))
+                        .on('tick', ticked);
+
+    function ticked() {
+        circles
+            .attr('cx', function(d) {
+                return d.x;
+            })
+            .attr('cy', function(d) {
+                return d.y
+            })
+
+        lines
+            .attr('x1', function(d) {
+                return d.source.x;
+            })
+            .attr('y1', function(d) {
+                return d.source.y;
+            })
+            .attr('x2', function(d) {
+                return d.target.x;
+            })
+            .attr('y2', function(d) {
+                return d.target.y;
+            })
+    }
+
+})
+</script>
