@@ -135,6 +135,72 @@
     							.attr('y1', ctrl1Y)
     							.attr('x2', ctrl2X)
     							.attr('y2', ctrl2Y);
+
+
+    		startNode
+    			.transition()
+    			.duration(3000)
+    			.attrTween('r', function() {
+    				return function(t) {
+    					var aX = startX + t * (ctrl1X - startX),
+	    					aY = startY + t * (ctrl1Y - startY),
+	    					bX = ctrl1X + t * (ctrl2X  - ctrl1X),
+	    					bY = ctrl1Y + t * (ctrl2Y  - ctrl1Y),
+	    					cX = ctrl2X + t * (endX - ctrl2X),
+	    					cY = ctrl2Y + t * (endY - ctrl2Y),
+	    					dX = aX + t * (bX - aX),
+	    					dY = aY + t * (bY - aY),
+	    					eX = bX + t * (cX - bX),
+	    					eY = bY + t * (cY - bY),
+	    					gX = dX + t * (eX - dX),
+	    					gY = dY + t * (eY - dY);
+
+	    				lineAB
+	    					.attr('x1', aX)
+	    					.attr('y1', aY)
+	    					.attr('x2', bX)
+	    					.attr('y2', bY);
+
+	    				lineBC
+	    					.attr('x1', bX)
+	    					.attr('y1', bY)
+	    					.attr('x2', cX)
+	    					.attr('y2', cY);
+
+	    				nodeA
+	    					.attr('cx', aX)
+	    					.attr('cy', aY);
+
+	    				nodeB
+	    					.attr('cx', bX)
+	    					.attr('cy', bY);
+
+	    				nodeC
+	    					.attr('cx', cX)
+	    					.attr('cy', cY);
+
+	    				nodeD
+	    					.attr('cx', dX)
+	    					.attr('cy', dY);
+
+	    				nodeE
+	    					.attr('cx', eX)
+	    					.attr('cy', eY);
+
+	    				lineDE
+	    					.attr('x1', dX)
+	    					.attr('y1', dY)
+	    					.attr('x2', eX)
+	    					.attr('y2', eY);
+
+	    				svg.append('circle')
+	    					.attr('r', 1.5)
+	    					.attr('cx', gX)
+	    					.attr('cy', gY);
+
+	    				return 5;
+    				}
+    			})
     	// lineNodeA
     	// 	.transition()
     	// 	.duration(6000)
