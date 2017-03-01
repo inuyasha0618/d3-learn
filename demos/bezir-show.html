@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>histogram</title>
+    <script src="/node_modules/d3/build/d3.min.js"></script>
+    <script src="/node_modules/jquery/dist/jquery.min.js"></script>
+    <style>
+        .svg-wrapper {
+            width: 1000px;
+            height: 1000px;
+            margin: 50px auto 0;
+            position: relative;
+        }
+
+        svg {
+            border: 1px gold solid;
+        }
+
+        svg .bezir-line {
+            fill: none;
+            stroke: steelblue;
+        }
+        
+        svg .base-line {
+            fill: none;
+            stroke: gold;
+        }
+
+        svg .line-node {
+            stroke: #fff;
+            stroke-width: 1.5px;
+            fill: #333;
+        }
+
+        svg .animate-line {
+            fill: none;
+            stroke: steelblue;
+        }
+
+        svg .bezir-node {
+            fill: green;
+            fill-opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <button class="">start</button>
+    <div class="svg-wrapper">
+        <svg width="1000" height="1000">
+            <path class="bezir-line"></path>
+            <line class="start-base-line base-line"></line>
+            <line class="end-base-line base-line"></line>
+            <circle class="start-node" cx="100" cy="360" r="5"></circle>
+            <circle class="end-node" cx="600" cy="500" r="5"></circle>
+            <circle class="ctrl-node" cx="900" cy="100" r="5"></circle>
+        </svg>
+    </div>
+    <script>
+
+        var svg = d3.select('svg'),
+            startNode = svg.select('.start-node'),
+            endNode = svg.select('.end-node'),
+            ctrlNode = svg.select('.ctrl-node'),
+            startX = parseInt(startNode.attr('cx')),
+            startY = parseInt(startNode.attr('cy')),
+            endX = parseInt(endNode.attr('cx')),
+            endY = parseInt(endNode.attr('cy')),
+            bezirLine = svg.select('.bezir-line'),
+            startBaseLine = svg.select('.start-base-line'),
+            endBaseLine = svg.select('.end-base-line');
+
+
+        function calcuBezir() {
+            return 'M' + [startX, startY]
+                        + 'Q' + [parseInt(ctrlNode.attr('cx')), parseInt(ctrlNode.attr('cy'))]
+                        + ' ' + [endX, endY];
+        }
+
+        bezirLine.attr('d', calcuBezir());
+
+        startBaseLine
+            .attr('x1', startX)
+            .attr('y1', startY)
+            .attr('x2', ctrlNode.attr('cx'))
+            .attr('y2', ctrlNode.attr('cy'));
+
+        endBaseLine
+            .attr('x1', endX)
+            .attr('y1', endY)
+            .attr('x2', ctrlNode.attr('cx'))
+            .attr('y2', ctrlNode.attr('cy'));
+
+        ctrlNode.call(d3.drag().on('drag', dragging));
+
+        function dragging() {
+            ctrlNode.attr('cx', d3.event.x);
+            ctrlNode.attr('cy', d3.event.y);
+            startBaseLine
+                .attr('x2', ctrlNode.attr('cx'))
+                .attr('y2', ctrlNode.attr('cy'));
+
+            endBaseLine
+                .attr('x2', ctrlNode.attr('cx'))
+                .attr('y2', ctrlNode.attr('cy'));
+
+            bezirLine.attr('d', calcuBezir());
+        }
+    </script>
+</body>
+</html>
