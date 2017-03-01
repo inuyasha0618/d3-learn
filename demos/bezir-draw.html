@@ -79,6 +79,9 @@
     							.attr('x2', ctrlX)
     							.attr('y2', ctrlY);
 
+    		lineNodeA.append('text')
+    				.text('haha')
+
     	svg.append('line')
     		.classed('base-line', true)
     		.attr('x1', startX)
@@ -95,7 +98,7 @@
 
     	lineNodeA
     		.transition()
-    		.duration(10000)
+    		.duration(6000)
     		.attrTween('cx', function() {
     			return function(t) {
     				var aX = startX + t * (ctrlX - startX),

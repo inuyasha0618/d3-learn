@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>histogram</title>
+    <script src="/node_modules/d3/build/d3.min.js"></script>
+    <script src="/node_modules/jquery/dist/jquery.min.js"></script>
+    <style>
+        .svg-wrapper {
+            width: 1000px;
+            height: 1000px;
+            margin: 50px auto 0;
+            position: relative;
+        }
+
+        svg {
+            border: 1px gold solid;
+        }
+        
+        svg .base-line {
+        	fill: none;
+        	stroke: steelblue;
+        }
+
+        svg .line-node {
+        	stroke: #fff;
+        	stroke-width: 1.5px;
+        	fill: #333;
+        }
+
+        svg .animate-line {
+        	fill: none;
+        	stroke: gold;
+        }
+
+        svg .bezir-node {
+        	fill: green;
+        	fill-opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <button class="">start</button>
+    <div class="svg-wrapper">
+        <svg width="1000" height="1000">
+        	<circle class="start-node" cx="100" cy="360" r="5"></circle>
+        	<circle class="end-node" cx="600" cy="500" r="5"></circle>
+        	<circle class="ctrl-node ctrl-node1" cx="300" cy="100" r="5"></circle>
+        	<circle class="ctrl-node ctrl-node2" cx="900" cy="100" r="5"></circle>
+        </svg>
+    </div>
+    <script>
+    	var svg = d3.select('svg'),
+    		startNode = svg.select('.start-node'),
+    		endNode = svg.select('.end-node'),
+    		ctrlNode1 = svg.select('.ctrl-node1'),
+    		ctrlNode2 = svg.select('.ctrl-node2'),
+    		startX = parseInt(startNode.attr('cx')),
+    		startY = parseInt(startNode.attr('cy')),
+    		endX = parseInt(endNode.attr('cx')),
+    		endY = parseInt(endNode.attr('cy')),
+    		ctrl1X = parseInt(ctrlNode1.attr('cx')),
+    		ctrl1Y = parseInt(ctrlNode1.attr('cy')),
+    		ctrl2X = parseInt(ctrlNode2.attr('cx')),
+    		ctrl2Y = parseInt(ctrlNode2.attr('cy')),
+
+    		nodeA = svg.append('circle')
+    						.classed('line-node', true)
+    						.attr('cx', startX)
+    						.attr('cy', startY)
+    						.attr('r', 5),
+
+    		nodeB = svg.append('circle')
+    						.classed('line-node', true)
+    						.attr('cx', ctrl1X)
+    						.attr('cy', ctrl1Y)
+    						.attr('r', 5),
+
+    		nodeC = svg.append('circle')
+    						.classed('line-node', true)
+    						.attr('cx', ctrl2X)
+    						.attr('cy', ctrl2Y)
+    						.attr('r', 5),
+
+    		nodeD = svg.append('circle')
+    						.classed('line-node', true)
+    						.attr('cx', startX)
+    						.attr('cy', startY)
+    						.attr('r', 5),
+
+    		nodeE = svg.append('circle')
+    						.classed('line-node', true)
+    						.attr('cx', ctrl1X)
+    						.attr('cy', ctrl1Y)
+    						.attr('r', 5),
+
+    		lineAB = svg.append('line')
+    							.classed('animate-line', true)
+    							.attr('x1', startX)
+    							.attr('y1', startY)
+    							.attr('x2', ctrl1X)
+    							.attr('y2', ctrl1Y),
+
+    		lineBC = svg.append('line')
+    							.classed('animate-line', true)
+    							.attr('x1', ctrl1X)
+    							.attr('y1', ctrl1Y)
+    							.attr('x2', ctrl2X)
+    							.attr('y2', ctrl2Y),
+
+    		lineDE = svg.append('line')
+    							.classed('animate-line', true)
+    							.attr('x1', startX)
+    							.attr('y1', startY)
+    							.attr('x2', ctrl1X)
+    							.attr('y2', ctrl1Y),
+
+    		lineCtrl1Start = svg.append('line')
+    							.classed('base-line', true)
+    							.attr('x1', startX)
+    							.attr('y1', startY)
+    							.attr('x2', ctrl1X)
+    							.attr('y2', ctrl1Y),
+
+    		lineCtrl2End = svg.append('line')
+    							.classed('base-line', true)
+    							.attr('x1', endX)
+    							.attr('y1', endY)
+    							.attr('x2', ctrl2X)
+    							.attr('y2', ctrl2Y),
+
+    		lineCtrl1Ctrl2 = svg.append('line')
+    							.classed('base-line', true)
+    							.attr('x1', ctrl1X)
+    							.attr('y1', ctrl1Y)
+    							.attr('x2', ctrl2X)
+    							.attr('y2', ctrl2Y);
+    	// lineNodeA
+    	// 	.transition()
+    	// 	.duration(6000)
+    	// 	.attrTween('cx', function() {
+    	// 		return function(t) {
+    	// 			var aX = startX + t * (ctrlX - startX),
+    	// 				aY = startY + t * (ctrlY - startY),
+    	// 				bX = ctrlX + t * (endX  - ctrlX),
+    	// 				bY = ctrlY + t * (endY  - ctrlY)
+
+    	// 			lineNodeB.attr('cx', bX);
+    	// 			lineNodeB.attr('cy', bY);
+
+    	// 			animateLine
+    	// 				.attr('x1', aX)
+    	// 				.attr('y1', aY)
+    	// 				.attr('x2', bX)
+    	// 				.attr('y2', bY);
+
+    	// 			svg.append('circle')
+    	// 				.classed('bezir-node', true)
+    	// 				.attr('r', 2.5)
+    	// 				.attr('cx', aX + t * (bX - aX))
+    	// 				.attr('cy', aY + t * (bY - aY));
+
+    	// 			lineNodeA.attr('cy', aY);
+    	// 			return aX;
+    	// 		}
+    	// 	})
+
+
+    </script>
+</body>
+</html>
